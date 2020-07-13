@@ -1,0 +1,3 @@
+JavaLibExport example
+
+This text file can be extended with licensing information.
