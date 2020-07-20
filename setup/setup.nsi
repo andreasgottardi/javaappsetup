@@ -54,6 +54,7 @@ Section "JavaLibExport example" SecJavaLibExport
   
   File /r "..\build\setup\bin"
   File /r "..\build\setup\lib"
+  File /r "..\build\setup\config"
   
   ;Store installation folder
   WriteRegStr HKCU "Software\JavaLibExport" "" $INSTDIR
