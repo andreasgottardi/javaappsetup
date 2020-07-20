@@ -25,5 +25,6 @@ public class JavaLibExport {
 		JavaLibExport jle = new JavaLibExport();
 		jle.methodUsingExternalLibs(simplemodel);
 		logger.info("Application stopped!");
+		logger.debug("A debug message for configuration testing purposes.");
 	}
 }
