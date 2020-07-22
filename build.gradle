@@ -41,29 +41,14 @@ task exportDependencies(type: Copy, group: 'distribution', description: 'Exports
 	from configurations.runtimeClasspath
 }
 
-task exportLogbackConfigInfo(type: Copy, group: 'distribution', description: 'Exports the configuration file for logback with level "INFO".'){
+task exportLogbackConfig(type: Copy, group: 'distribution', description: 'Exports the configuration file for logback with level "INFO".'){
 	dependsOn exportDependencies
 	from (sourceSets.main.output) {
         include "/logback.xml"
         filter{ it.replaceAll('logs/application.log', '../logs/application.log')}
+        filter{ it.replaceAll('level="INFO"', 'level="\\${logback.level}"')}
     }
 	into "${buildDir}/setup/config"
-	rename { filename ->
-        filename.replace 'xml', 'info.xml'
-    }
-}
-
-task exportLogbackConfigDebug(type: Copy, group: 'distribution', description: 'Exports the configuration file for logback with level "DEBUG".'){
-	dependsOn exportDependencies
-	from (sourceSets.main.output) {
-        include "/logback.xml"
-        filter{ it.replaceAll('logs/application.log', '../logs/application.log')}
-        filter{ it.replaceAll('level="INFO"', 'level="DEBUG"')}
-    }
-	into "${buildDir}/setup/config"
-	rename { filename ->
-        filename.replace 'xml', 'debug.xml'
-    }
 }
 
 tasks.withType(Jar) {
@@ -71,8 +56,7 @@ tasks.withType(Jar) {
 }
 
 jar {
-	dependsOn exportLogbackConfigInfo
-	dependsOn exportLogbackConfigDebug
+	dependsOn exportLogbackConfig
 	manifest {
 		attributes 'Main-Class': 'javalibexport.JavaLibExport'
 	}
@@ -82,7 +66,7 @@ task exportInfoBat(type: Copy, group: 'distribution', description: 'Exports the 
 	dependsOn jar
 	from (sourceSets.main.output) {
         include "/javalibexport.bat"
-        filter{ it.replaceAll('logback.xml', 'logback.info.xml')}
+        filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=INFO')}
     }
     into "${buildDir}/setup/bin"
     rename { filename ->
@@ -94,7 +78,7 @@ task exportInfoPs1(type: Copy, group: 'distribution', description: 'Exports the 
 	dependsOn jar
 	from (sourceSets.main.output) {
         include "/javalibexport.ps1"
-        filter{ it.replaceAll('logback.xml', 'logback.info.xml')}
+        filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=INFO')}
     }
     into "${buildDir}/setup/bin"
     rename { filename ->
@@ -106,7 +90,7 @@ task exportInfoSh(type: Copy, group: 'distribution', description: 'Exports the B
 	dependsOn jar
 	from (sourceSets.main.output) {
         include "/javalibexport.sh"
-        filter{ it.replaceAll('logback.xml', 'logback.info.xml')}
+        filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=INFO')}
     }
     into "${buildDir}/setup/bin"
     rename { filename ->
@@ -118,7 +102,7 @@ task exportDebugBat(type: Copy, group: 'distribution', description: 'Exports the
 	dependsOn jar
 	from (sourceSets.main.output) {
         include "/javalibexport.bat"
-        filter{ it.replaceAll('logback.xml', 'logback.debug.xml')}
+        filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=DEBUG')}
     }
     into "${buildDir}/setup/bin"
     rename { filename ->
@@ -130,7 +114,7 @@ task exportDebugPs1(type: Copy, group: 'distribution', description: 'Exports the
 	dependsOn jar
 	from (sourceSets.main.output) {
         include "/javalibexport.ps1"
-        filter{ it.replaceAll('logback.xml', 'logback.debug.xml')}
+        filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=DEBUG')}
     }
     into "${buildDir}/setup/bin"
     rename { filename ->
@@ -142,7 +126,7 @@ task exportDebugSh(type: Copy, group: 'distribution', description: 'Exports the 
 	dependsOn jar
 	from (sourceSets.main.output) {
         include "/javalibexport.sh"
-        filter{ it.replaceAll('logback.xml', 'logback.debug.xml')}
+        filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=DEBUG')}
     }
     into "${buildDir}/setup/bin"
     rename { filename ->
