@@ -41,10 +41,29 @@ task exportDependencies(type: Copy, group: 'distribution', description: 'Exports
 	from configurations.runtimeClasspath
 }
 
-task exportLogbackConfig(type: Copy, group: 'distribution', description: 'Exports the application dependencies into a export folder.') {
+task exportLogbackConfigInfo(type: Copy, group: 'distribution', description: 'Exports the configuration file for logback with level "INFO".'){
 	dependsOn exportDependencies
+	from (sourceSets.main.output) {
+        include "/logback.xml"
+        filter{ it.replaceAll('logs/application.log', '../logs/application.log')}
+    }
 	into "${buildDir}/setup/config"
-	from "config/logback.xml"
+	rename { filename ->
+        filename.replace 'xml', 'info.xml'
+    }
+}
+
+task exportLogbackConfigDebug(type: Copy, group: 'distribution', description: 'Exports the configuration file for logback with level "DEBUG".'){
+	dependsOn exportDependencies
+	from (sourceSets.main.output) {
+        include "/logback.xml"
+        filter{ it.replaceAll('logs/application.log', '../logs/application.log')}
+        filter{ it.replaceAll('level="INFO"', 'level="DEBUG"')}
+    }
+	into "${buildDir}/setup/config"
+	rename { filename ->
+        filename.replace 'xml', 'debug.xml'
+    }
 }
 
 tasks.withType(Jar) {
@@ -52,33 +71,105 @@ tasks.withType(Jar) {
 }
 
 jar {
-	dependsOn exportLogbackConfig
+	dependsOn exportLogbackConfigInfo
+	dependsOn exportLogbackConfigDebug
 	manifest {
 		attributes 'Main-Class': 'javalibexport.JavaLibExport'
 	}
 }
 
-task writeExecScripts(group: 'build', description: 'Writes the execute scripts.'){
+task exportInfoBat(type: Copy, group: 'distribution', description: 'Exports the Windows batch file. Logging level "INFO".'){
 	dependsOn jar
-	doLast {
-		mkdir "${buildDir}/setup/bin"
-		new File("${buildDir}/setup/bin", "javalibexport.bat").text = '@echo off\r\ncd %~dp0\r\njava -cp "..\\lib\\*" -Dlogback.configurationFile=..\\config\\logback.xml javalibexport.JavaLibExport\r\npause'
-		new File("${buildDir}/setup/bin", "javalibexport.ps1").text = 'Set-Location "$PSScriptRoot"\r\nStart-Process -FilePath \'java\' -ArgumentList @(\'-cp\', \'..\\lib\\*\', \'-Dlogback.configurationFile=..\\config\\logback.xml\', \'javalibexport.JavaLibExport\') -NoNewWindow -Wait\r\nRead-Host -Prompt \'Press enter to close the window\''
-		new File("${buildDir}/setup/bin", "javalibexport.sh").text = '#!/bin/bash\ncd "$(dirname "$0")"\njava -cp "../lib/*" -Dlogback.configurationFile=../config/logback.xml javalibexport.JavaLibExport\nread -s -n 1 -p "Press any key to continue..."'
+	from (sourceSets.main.output) {
+        include "/javalibexport.bat"
+        filter{ it.replaceAll('logback.xml', 'logback.info.xml')}
+    }
+    into "${buildDir}/setup/bin"
+    rename { filename ->
+        filename.replace 'bat', 'info.bat'
+    }
+}
+
+task exportInfoPs1(type: Copy, group: 'distribution', description: 'Exports the Windows PowerShell file. Logging level "INFO".'){
+	dependsOn jar
+	from (sourceSets.main.output) {
+        include "/javalibexport.ps1"
+        filter{ it.replaceAll('logback.xml', 'logback.info.xml')}
+    }
+    into "${buildDir}/setup/bin"
+    rename { filename ->
+        filename.replace 'ps1', 'info.ps1'
+    }
+}
+
+task exportInfoSh(type: Copy, group: 'distribution', description: 'Exports the Bash launcher file. Logging level "INFO".'){
+	dependsOn jar
+	from (sourceSets.main.output) {
+        include "/javalibexport.sh"
+        filter{ it.replaceAll('logback.xml', 'logback.info.xml')}
+    }
+    into "${buildDir}/setup/bin"
+    rename { filename ->
+        filename.replace 'sh', 'info.sh'
+    }
+}
+
+task exportDebugBat(type: Copy, group: 'distribution', description: 'Exports the Windows batch file. Logging level "DEBUG".'){
+	dependsOn jar
+	from (sourceSets.main.output) {
+        include "/javalibexport.bat"
+        filter{ it.replaceAll('logback.xml', 'logback.debug.xml')}
+    }
+    into "${buildDir}/setup/bin"
+    rename { filename ->
+        filename.replace 'bat', 'debug.bat'
+    }
+}
+
+task exportDebugPs1(type: Copy, group: 'distribution', description: 'Exports the Windows PowerShell file. Logging level "DEBUG".'){
+	dependsOn jar
+	from (sourceSets.main.output) {
+        include "/javalibexport.ps1"
+        filter{ it.replaceAll('logback.xml', 'logback.debug.xml')}
+    }
+    into "${buildDir}/setup/bin"
+    rename { filename ->
+        filename.replace 'ps1', 'debug.ps1'
+    }
+}
+
+task exportDebugSh(type: Copy, group: 'distribution', description: 'Exports the Bash launcher file. Logging level "DEBUG".'){
+	dependsOn jar
+	from (sourceSets.main.output) {
+        include "/javalibexport.sh"
+        filter{ it.replaceAll('logback.xml', 'logback.debug.xml')}
+    }
+    into "${buildDir}/setup/bin"
+    rename { filename ->
+        filename.replace 'sh', 'debug.sh'
+    }
+}
+
+task writeExecScripts(group: 'build', description: 'Writes the execute scripts to the output directory.'){
+	
+	dependsOn exportInfoBat
+	dependsOn exportInfoPs1
+	dependsOn exportInfoSh
+	
+	dependsOn exportDebugBat
+	dependsOn exportDebugPs1
+	dependsOn exportDebugSh
+}
+
+task createSetup(type: Exec, group: "build setup", description: "Builds basic installer.") {
+    dependsOn writeExecScripts
+    mustRunAfter writeExecScripts
+	workingDir 'setup'
+	commandLine 'makensis.exe','/DVERSION='+version,'setup.nsi'
+	standardOutput = new ByteArrayOutputStream()
+	ext.output = {
+		return standardOutput.toString()
 	}
 }
 
 compileJava.dependsOn clean
-
-task createSetup(type: Exec, description: "Builds basic installer.", group: "build setup") {
-	//doLast {
-	    dependsOn writeExecScripts
-	    mustRunAfter writeExecScripts
-		workingDir 'setup'
-		commandLine 'makensis.exe','/DVERSION='+version,'setup.nsi'
-		standardOutput = new ByteArrayOutputStream()
-		ext.output = {
-			return standardOutput.toString()
-		}
-	//}
-}
