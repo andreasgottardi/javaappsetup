@@ -15,16 +15,13 @@ mainClassName = 'javalibexport.JavaLibExport'
 version = '0.0.1'
 
 dependencies {
-
 	implementation 'org.slf4j:slf4j-api:1.7.30'
 	implementation 'ch.qos.logback:logback-core:1.2.3'
 	implementation 'ch.qos.logback:logback-classic:1.2.3'
 	implementation 'com.google.code.gson:gson:2.8.6'
-	
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
 	externalTestRun 'org.junit.platform:junit-platform-console-standalone:1.6.2'
-
 }
 
 test {
@@ -62,87 +59,37 @@ jar {
 	}
 }
 
-task exportInfoBat(type: Copy, group: 'distribution', description: 'Exports the Windows batch file. Logging level "INFO".'){
+task exportInfoExecs(type: Copy, group: 'distribution', description: 'Exports the executables. Logging level "INFO".'){
 	dependsOn jar
 	from (sourceSets.main.output) {
         include "/javalibexport.bat"
-        filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=INFO')}
-    }
-    into "${buildDir}/setup/bin"
-    rename { filename ->
-        filename.replace 'bat', 'info.bat'
-    }
-}
-
-task exportInfoPs1(type: Copy, group: 'distribution', description: 'Exports the Windows PowerShell file. Logging level "INFO".'){
-	dependsOn jar
-	from (sourceSets.main.output) {
         include "/javalibexport.ps1"
-        filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=INFO')}
-    }
-    into "${buildDir}/setup/bin"
-    rename { filename ->
-        filename.replace 'ps1', 'info.ps1'
-    }
-}
-
-task exportInfoSh(type: Copy, group: 'distribution', description: 'Exports the Bash launcher file. Logging level "INFO".'){
-	dependsOn jar
-	from (sourceSets.main.output) {
         include "/javalibexport.sh"
         filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=INFO')}
     }
     into "${buildDir}/setup/bin"
     rename { filename ->
-        filename.replace 'sh', 'info.sh'
+        filename.replace 'javalibexport', 'javalibexport.info'
     }
 }
 
-task exportDebugBat(type: Copy, group: 'distribution', description: 'Exports the Windows batch file. Logging level "DEBUG".'){
+task exportDebugExecs(type: Copy, group: 'distribution', description: 'Exports the executables. Logging level "DEBUG".'){
 	dependsOn jar
 	from (sourceSets.main.output) {
         include "/javalibexport.bat"
-        filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=DEBUG')}
-    }
-    into "${buildDir}/setup/bin"
-    rename { filename ->
-        filename.replace 'bat', 'debug.bat'
-    }
-}
-
-task exportDebugPs1(type: Copy, group: 'distribution', description: 'Exports the Windows PowerShell file. Logging level "DEBUG".'){
-	dependsOn jar
-	from (sourceSets.main.output) {
         include "/javalibexport.ps1"
-        filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=DEBUG')}
-    }
-    into "${buildDir}/setup/bin"
-    rename { filename ->
-        filename.replace 'ps1', 'debug.ps1'
-    }
-}
-
-task exportDebugSh(type: Copy, group: 'distribution', description: 'Exports the Bash launcher file. Logging level "DEBUG".'){
-	dependsOn jar
-	from (sourceSets.main.output) {
         include "/javalibexport.sh"
         filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=DEBUG')}
     }
     into "${buildDir}/setup/bin"
     rename { filename ->
-        filename.replace 'sh', 'debug.sh'
+        filename.replace 'javalibexport', 'javalibexport.debug'
     }
 }
 
 task writeExecScripts(group: 'build', description: 'Writes the execute scripts to the output directory.'){
-	
-	dependsOn exportInfoBat
-	dependsOn exportInfoPs1
-	dependsOn exportInfoSh
-	
-	dependsOn exportDebugBat
-	dependsOn exportDebugPs1
-	dependsOn exportDebugSh
+	dependsOn exportInfoExecs
+	dependsOn exportDebugExecs
 }
 
 task createSetup(type: Exec, group: "build setup", description: "Builds basic installer.") {
