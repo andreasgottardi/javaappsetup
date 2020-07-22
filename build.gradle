@@ -41,7 +41,7 @@ task exportDependencies(type: Copy, group: 'distribution', description: 'Exports
 	from configurations.runtimeClasspath
 }
 
-task exportLogbackConfig(type: Copy, group: 'distribution', description: 'Exports the configuration file for logback with level "INFO".'){
+task exportLogbackConfig(type: Copy, group: 'distribution', description: 'Exports the configuration file.'){
 	dependsOn exportDependencies
 	from (sourceSets.main.output) {
         include "/logback.xml"
