@@ -17,9 +17,12 @@
 		<encoder>
 			<pattern>%X{PID} %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} %msg%n</pattern>
 		</encoder>
-		<rollingPolicy
-			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<fileNamePattern>logs/application.log.%d{yyyy-MM-dd}.log</fileNamePattern>
+			<!-- Keep logs max 30 days. -->
+			<maxHistory>30</maxHistory>
+			<!-- Keep a max of 3 GB of log files. -->
+			<totalSizeCap>3GB</totalSizeCap>
 		</rollingPolicy>
 	</appender>
 	<root level="INFO">

@@ -79,13 +79,7 @@ SectionEnd
 ;Uninstaller Section
 
 Section "Uninstall"
-
-  ;ADD YOUR OWN FILES HERE...
-
   Delete "$INSTDIR\Uninstall.exe"
-
   RMDir /r "$INSTDIR"
-
-  DeleteRegKey /ifempty HKCU "Software\Modern UI Test"
-
+  DeleteRegKey /ifempty HKCU "Software\JavaLibExport"
 SectionEnd

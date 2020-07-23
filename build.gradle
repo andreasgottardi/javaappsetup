@@ -42,8 +42,13 @@ task exportLogbackConfig(type: Copy, group: 'distribution', description: 'Export
 	dependsOn exportDependencies
 	from (sourceSets.main.output) {
         include "/logback.xml"
+        /*
+          Reconfigure the output path. In the development environment the execution directory is the project directory.
+          In the installed environment the execution directory is in the folder "bin". Therefor the output path starts
+          with ".." to change to the program directory.
+        */
         filter{ it.replaceAll('logs/application.log', '../logs/application.log')}
-        filter{ it.replaceAll('level="INFO"', 'level="\\${logback.level}"')}
+        filter{ it.replaceAll('	<root level="(.*)">', '	<!-- The variable "logback.level" is specified with the "-D" parameter when executing the application.\r\n	     Take a look at the executables in the folder "bin". -->\r\n	<root level="\\${logback.level}">')}
     }
 	into "${buildDir}/setup/config"
 }
@@ -59,6 +64,7 @@ jar {
 	}
 }
 
+/* Creates executable scripts that produce default logging output by setting the logging level to "INFO". */
 task exportInfoExecs(type: Copy, group: 'distribution', description: 'Exports the executables. Logging level "INFO".'){
 	dependsOn jar
 	from (sourceSets.main.output) {
@@ -73,6 +79,7 @@ task exportInfoExecs(type: Copy, group: 'distribution', description: 'Exports th
     }
 }
 
+/* Creates executable scripts that produce more logging output by setting the logging level to "DEBUG". */
 task exportDebugExecs(type: Copy, group: 'distribution', description: 'Exports the executables. Logging level "DEBUG".'){
 	dependsOn jar
 	from (sourceSets.main.output) {
@@ -87,9 +94,26 @@ task exportDebugExecs(type: Copy, group: 'distribution', description: 'Exports t
     }
 }
 
+/* Creates executable scripts that produce no logging output by setting the logging level to "OFF". */
+task exportNologExecs(type: Copy, group: 'distribution', description: 'Exports the executables. Logging level "OFF".'){
+	dependsOn jar
+	from (sourceSets.main.output) {
+        include "/javalibexport.bat"
+        include "/javalibexport.ps1"
+        include "/javalibexport.sh"
+        filter{ it.replaceAll('logback.xml', 'logback.xml -Dlogback.level=OFF')}
+    }
+    into "${buildDir}/setup/bin"
+    rename { filename ->
+        filename.replace 'javalibexport', 'javalibexport.nolog'
+    }
+}
+
+/* Collection task to execute all executable producing tasks. */
 task writeExecScripts(group: 'build', description: 'Writes the execute scripts to the output directory.'){
 	dependsOn exportInfoExecs
 	dependsOn exportDebugExecs
+	dependsOn exportNologExecs
 }
 
 task createSetup(type: Exec, group: "build setup", description: "Builds basic installer.") {
@@ -103,4 +127,5 @@ task createSetup(type: Exec, group: "build setup", description: "Builds basic in
 	}
 }
 
+/* Always clean the output directory. */
 compileJava.dependsOn clean
