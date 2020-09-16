@@ -55,25 +55,33 @@ Section "JavaLibExport example" SecJavaLibExport
   File /r "..\build\setup\bin"
   File /r "..\build\setup\lib"
   File /r "..\build\setup\config"
+  File "nok.exe"
+  File "ok.exe"
   
   ;Store installation folder
   WriteRegStr HKCU "Software\JavaLibExport" "" $INSTDIR
   
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
+  
+  ExecWait '"$INSTDIR\ok.exe"' $0
+  DetailPrint "ok.exe program returned $0"
+  
+  ExecWait '"$INSTDIR\nok.exe"' $0
+  DetailPrint "nok.exe program returned $0"
 
 SectionEnd
 
 ;--------------------------------
 ;Descriptions
 
-  ;Language strings
-  LangString DESC_SecJavaLibExport ${LANG_ENGLISH} "JavaLibExport section"
+;Language strings
+LangString DESC_SecJavaLibExport ${LANG_ENGLISH} "JavaLibExport section"
 
-  ;Assign language strings to sections
-  !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-    !insertmacro MUI_DESCRIPTION_TEXT ${SecJavaLibExport} $(DESC_SecJavaLibExport)
-  !insertmacro MUI_FUNCTION_DESCRIPTION_END
+;Assign language strings to sections
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+!insertmacro MUI_DESCRIPTION_TEXT ${SecJavaLibExport} $(DESC_SecJavaLibExport)
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------------
 ;Uninstaller Section
