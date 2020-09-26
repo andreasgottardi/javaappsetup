@@ -116,9 +116,20 @@ task writeExecScripts(group: 'build', description: 'Writes the execute scripts t
 	dependsOn exportNologExecs
 }
 
-task createSetup(type: Exec, group: "build setup", description: "Builds basic installer.") {
+task createSubSetup(type: Exec, group: "build setup", description: "Builds subsetup installer.") {
     dependsOn writeExecScripts
     mustRunAfter writeExecScripts
+	workingDir 'setup'
+	commandLine 'makensis.exe','/DVERSION='+version,'subsetup.nsi'
+	standardOutput = new ByteArrayOutputStream()
+	ext.output = {
+		return standardOutput.toString()
+	}
+}
+
+task createSetup(type: Exec, group: "build setup", description: "Builds basic installer.") {
+    dependsOn createSubSetup
+    mustRunAfter createSubSetup
 	workingDir 'setup'
 	commandLine 'makensis.exe','/DVERSION='+version,'setup.nsi'
 	standardOutput = new ByteArrayOutputStream()

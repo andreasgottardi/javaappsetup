@@ -11,15 +11,15 @@
 
   ;Name and file
   Name "Java library export example"
-  OutFile "..\build\javalibexport-setup-${VERSION}.exe"
-  BrandingText "Java lib export setup ${VERSION}"
+  OutFile "..\build\sub-setup-${VERSION}.exe"
+  BrandingText "Java lib export sub setup ${VERSION}"
   Unicode True
 
   ;Default installation folder
-  InstallDir "$LOCALAPPDATA\Programs\JavaLibExport"
+  InstallDir "$LOCALAPPDATA\Programs\SubSetup"
   
   ;Get installation folder from registry if available
-  InstallDirRegKey HKCU "Software\JavaLibExport" ""
+  InstallDirRegKey HKCU "Software\SubSetup" ""
 
   ;Request application privileges for Windows Vista
   RequestExecutionLevel user
@@ -48,38 +48,19 @@
 ;--------------------------------
 ;Installer Sections
 
-Section "JavaLibExport example" SecJavaLibExport
+Section "SubSetup example" SecSubSetup
 
   SetOutPath "$INSTDIR"
   
-  File /r "..\build\setup\bin"
-  File /r "..\build\setup\lib"
-  File /r "..\build\setup\config"
-
-  ; Put the files into the temporary directory
-  File "/oname=$TEMP\sub-setup-0.0.1.exe" "..\build\sub-setup-0.0.1.exe"
-  File "/oname=$TEMP\nok.exe" "nok.exe"
-  File "/oname=$TEMP\ok.exe" "ok.exe"
+  File "ok.exe"
   
   ;Store installation folder
-  WriteRegStr HKCU "Software\JavaLibExport" "" $INSTDIR
+  WriteRegStr HKCU "Software\SubSetup" "" $INSTDIR
   
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   
-  ExecWait '"$TEMP\ok.exe"' $0
-  DetailPrint "ok.exe program returned $0"
-  
-  ExecWait '"$TEMP\nok.exe"' $0
-  DetailPrint "nok.exe program returned $0"
-  
-  ExecWait '"$TEMP\sub-setup-0.0.1.exe"' $0
-  DetailPrint "SubSetup program returned $0. Launching uninstall."
-
-  ; Clean up
-  Delete "$TEMP\sub-setup-0.0.1.exe"
-  Delete "$TEMP\nok.exe"
-  Delete "$TEMP\ok.exe"
+  SetErrorLevel 4722
 
 SectionEnd
 
@@ -87,11 +68,11 @@ SectionEnd
 ;Descriptions
 
 ;Language strings
-LangString DESC_SecJavaLibExport ${LANG_ENGLISH} "JavaLibExport section"
+LangString DESC_SecSubSetup ${LANG_ENGLISH} "SubSetup section"
 
 ;Assign language strings to sections
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-!insertmacro MUI_DESCRIPTION_TEXT ${SecJavaLibExport} $(DESC_SecJavaLibExport)
+!insertmacro MUI_DESCRIPTION_TEXT ${SecSubSetup} $(DESC_SecSubSetup)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------------
@@ -99,6 +80,6 @@ LangString DESC_SecJavaLibExport ${LANG_ENGLISH} "JavaLibExport section"
 
 Section "Uninstall"
   Delete "$INSTDIR\Uninstall.exe"
-  DeleteRegKey /ifempty HKCU "Software\JavaLibExport"
+  DeleteRegKey /ifempty HKCU "Software\SubSetup"
   RMDir /r "$INSTDIR"
 SectionEnd
